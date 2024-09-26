@@ -1,3 +1,4 @@
+import AppProvider from "@/providers/AppProvider";
 import "@/styles/globals.css";
 import { Metadata } from "next";
 import { Poppins } from "next/font/google";
@@ -21,7 +22,9 @@ export default function RootLayout({
 }) {
 	return (
 		<html suppressHydrationWarning lang="en">
-			<body className={poppins.className}>{children}</body>
+			<body className={poppins.className}>
+				<AppProvider>{children}</AppProvider>
+			</body>
 		</html>
 	);
 }
