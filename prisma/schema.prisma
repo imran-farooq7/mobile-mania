@@ -20,15 +20,16 @@ model User {
   password     String?
   admin        Boolean   @default(false)
   profileImage String
-  wishlist     Product[] @relation("UserWishlist")
+  wishlist     Product[]
   reviews      Review[]  @relation("UserReviews")
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @default(now())
+  Order        Order[]
 }
 
 model Product {
   id            String   @id @default(cuid())
-  users         User[]   @relation("UserWishlist")
+  users         User[]
   images        String[]
   name          String
   price         Int?
@@ -42,6 +43,8 @@ model Product {
   featured      Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now())
+  Order         Order?   @relation(fields: [orderId], references: [id])
+  orderId       String?
 }
 
 model Review {
@@ -50,4 +53,30 @@ model Review {
   userId    String
   Product   Product? @relation(fields: [productId], references: [id])
   productId String?
+}
+
+model Order {
+  id            String    @id @default(cuid())
+  name          String
+  email         String
+  city          String
+  postalCode    String
+  streetAddress String
+  country       String
+  paid          Boolean?  @default(false)
+  products      Product[]
+  user          User      @relation(fields: [userId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+  staus         Status    @default(PENDING)
+  userId        String
+}
+
+enum Status {
+  PROCESSING
+  PENDING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  PAYMENT_FAILED
 }
