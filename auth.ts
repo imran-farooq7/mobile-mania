@@ -2,7 +2,14 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import prisma from "./prisma/db";
 import { compare } from "bcryptjs";
+import GitHub from "next-auth/providers/github";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+	session: {
+		strategy: "jwt",
+	},
+	adapter: PrismaAdapter(prisma),
 	providers: [
 		Credentials({
 			credentials: {
@@ -29,5 +36,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 				return user;
 			},
 		}),
+		GitHub,
 	],
 });
