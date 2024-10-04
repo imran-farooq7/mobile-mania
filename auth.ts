@@ -38,4 +38,69 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 		}),
 		GitHub,
 	],
+	callbacks: {
+		signIn: async ({ user, account }) => {
+			if (account?.provider === "github") {
+				try {
+					const { email, image, name } = user;
+					let isUser = await prisma.user.findFirst({
+						where: {
+							email: email!,
+						},
+					});
+					if (!isUser) {
+						const newUser = await prisma.user.create({
+							data: {
+								email: email!,
+								name: name!,
+								profileImage: image!,
+							},
+						});
+						isUser = newUser;
+					}
+					user.id = isUser.id;
+					user.email = isUser.email;
+					user.name = isUser.name;
+					//@ts-ignore
+					user.admin = isUser.admin;
+					//@ts-ignore
+					user.profileImage = isUser.profileImage;
+					return true;
+				} catch (error) {
+					console.log(error);
+					return false;
+				}
+			}
+			return true;
+		},
+		jwt: async ({ user, token, trigger, session }) => {
+			if (user) {
+				token.id = user.id;
+				token.email = user.email;
+				token.name = user.name;
+				//@ts-ignore
+				token.admin = user.admin;
+				//@ts-ignore
+				token.profileImage = user.profileImage;
+			}
+			if (trigger === "update" && session) {
+				token.name = session.user.name;
+				token.email = session.user.email;
+				token.profileImage = session.user.profileImage;
+			}
+			return token;
+		},
+		session: async ({ session, token }) => {
+			if (session.user) {
+				session.user.id = token.id as string;
+				session.user.email = token.email!;
+				session.user.name = token.name;
+				//@ts-ignore
+				session.user.admin = token.admin;
+				//@ts-ignore
+				session.user.profileImage = token.profileImage;
+			}
+			return session;
+		},
+	},
 });
